@@ -1,7 +1,7 @@
 [project]
 name = "cvmd"
 version = "0.1.0-20251231"
-description = "Add your description here"
+description = "Computer Vision Models Deployment"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = []
