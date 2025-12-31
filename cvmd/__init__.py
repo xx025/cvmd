@@ -4,6 +4,7 @@ from .yolo.yolov11 import Yolov11Detect, Yolov11Segment
 from .yolo.yolov12 import Yolov12Detect, Yolov12Segment
 from .detr.detr import DETR
 from .detr.deformable_detr import DeformableDETR
+from .utils.windows import detect_with_windows
 
 __all__ = [
     "DETR",
@@ -16,4 +17,5 @@ __all__ = [
     "Yolov11Segment",
     "Yolov12Detect",
     "Yolov12Segment",
+    "detect_with_windows",
 ]
