@@ -1,6 +1,12 @@
 import torch
 
-from .ops import letterbox, non_max_suppression, scale_boxes
+from .ops import (
+    letterbox,
+    non_max_suppression,
+    process_mask_native,
+    scale_boxes,
+)
+
 
 
 class Yolov8Detect:
@@ -58,9 +64,26 @@ class Yolov8Detect:
 class Yolov8Segment(Yolov8Detect):
 
     def __init__(self, *args, **kwargs):
+        self.mask_thr = kwargs.pop("mask_thr", 0.6)
+        self.nc = kwargs.get("nc", None)
         super().__init__(*args, **kwargs)
 
     def __post_process__(self, pred, *args, **kwds):
-        pred = pred[0]  # 返回的仍然是框,后续更新mask
-        pred = super().__post_process__(pred, *args, **kwds)
-        return pred
+        im0 = args[0]
+        pred0, proto = pred
+
+        if self.nc is None:
+            self.nc = int(pred0.shape[1] - 4 - proto.shape[1])
+
+        proto = proto[0]
+        det = non_max_suppression(
+            pred0, self.conf, self.iou, classes=self.classes, nc=self.nc
+        )[0]
+        if det is None or len(det) == 0:
+            return det.cpu().numpy(), im0[:0, :, 0]
+
+        det[:, :4] = scale_boxes(self.imgsz, det[:, :4], im0.shape).round()
+        masks = process_mask_native(proto, det[:, 6:], det[:, :4], im0.shape[:2])
+        masks = masks > self.mask_thr
+
+        return det[:, :6].cpu().numpy(), masks.cpu().numpy()
