@@ -11,7 +11,7 @@ def main():
     Path("temp/runs").mkdir(parents=True, exist_ok=True)
 
     model = Yolov8Segment(
-        weights="temp/yolov8l-seg.torchscript",
+        weights="/home/user/worksapce/cvmd/temp/yolov8l-seg.torchscript",
         device="cuda",
         conf=0.4,
         iou=0.45,
@@ -19,7 +19,7 @@ def main():
         half=True,
     )
     model.load_model()
-    im = iio.imread("temp/coco128/images/train2017/000000000025.jpg", mode="RGB")
+    im = iio.imread("/home/user/worksapce/cvmd/temp/coco128/images/train2017/000000000074.jpg", mode="RGB")
     results, masks = model(im)
     print("Detection results:", results)
     bbox = results[..., :4]
@@ -37,7 +37,7 @@ def main():
         labels=[f"{c}-{s:.2f}" for c, s in zip(cls, conf)],
         line_width=3,
     )
-    iio.imwrite("temp/runs/yolov11_result.jpg", plot_im)
+    iio.imwrite("temp/runs/yolov8l_result.jpg", plot_im)
 
     # Test blank image
     blank_im = 255 * np.ones((1024, 800, 3), dtype=np.uint8)
