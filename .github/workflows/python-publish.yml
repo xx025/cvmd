@@ -1,0 +1,63 @@
+name: Tag and Release on Version Change
+
+on:
+  push:
+    paths:
+      - "pyproject.toml"
+
+permissions:
+  contents: write   # 给 workflow 写权限
+
+jobs:
+  tag-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Extract version from pyproject.toml
+      id: get_version
+      run: |
+        VERSION=$(grep '^version =' pyproject.toml | sed -E 's/version = "(.*)"/\1/')
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+    - name: Check if tag already exists
+      id: check_tag
+      run: |
+        if git rev-parse "v${{ steps.get_version.outputs.version }}" >/dev/null 2>&1; then
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Configure Git
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+
+    - name: Set remote URL with PAT
+      run: |
+        git remote set-url origin https://${{ secrets.GH_PAT }}@github.com/xx025/pycvt.git
+
+    - name: Create and push tag
+      if: steps.check_tag.outputs.exists == 'false'
+      run: |
+        git tag "v${{ steps.get_version.outputs.version }}"
+        git push origin "v${{ steps.get_version.outputs.version }}"
+
+    - name: Create GitHub Release
+      if: steps.check_tag.outputs.exists == 'false'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: "v${{ steps.get_version.outputs.version }}"
+        name: "Release v${{ steps.get_version.outputs.version }}"
+        body: |
+          Auto Publish: v${{ steps.get_version.outputs.version }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_PAT }}

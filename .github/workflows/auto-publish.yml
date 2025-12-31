@@ -1,0 +1,25 @@
+name: Publish to PyPI
+
+on:
+  push:
+    paths:
+      - "pyproject.toml"
+
+jobs:
+  publish:
+    name: Build and publish using uv
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Build the package
+        run: |
+          uv sync
+          uv build
+
+      - name: Publish to PyPI
+        run: uv publish --username __token__ --password ${{ secrets.PYPI_TOKEN }}
