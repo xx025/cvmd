@@ -18,7 +18,7 @@ jobs:
 
       - name: Build the package
         run: |
-          uv sync
+          uv sync --no-dev
           uv build
 
       - name: Publish to PyPI
