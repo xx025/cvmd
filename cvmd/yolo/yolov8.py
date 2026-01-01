@@ -1,4 +1,8 @@
+from typing import TypedDict, Optional, Sequence, Union
+
 import torch
+
+from cvmd.utils.torchutils import normalize_device
 
 from .ops import (
     letterbox,
@@ -8,25 +12,54 @@ from .ops import (
 )
 
 
+class YoloInitKwargs(TypedDict, total=False):
+    weights: Union[str, bytes, bytearray]
+    device: str
+    conf: float
+    iou: float
+    classes: Optional[Sequence[int]]
+    imgsz: int
+    half: bool
+    nc: Optional[int]
+    load_warm_up: bool
+
 
 class Yolov8Detect:
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs: YoloInitKwargs):
         self.weights = kwargs.get("weights", "yolov8s.torchscript")
-        self.device = kwargs.get("device", "cpu")
+        self.device = normalize_device(kwargs.get("device", "cpu"))
         self.conf = kwargs.get("conf", 0.25)
         self.iou = kwargs.get("iou", 0.45)
         self.classes = kwargs.get("classes", None)
         self.imgsz = kwargs.get("imgsz", 640)
         self.half = kwargs.get("half", False)
         self.nc = kwargs.get("nc", None)
-        self.model = self.load_model()
+        self._load_warmup = kwargs.get("load_warm_up", True)
+        self._model_dtype = None
 
         if isinstance(self.imgsz, int):
             self.imgsz = (self.imgsz, self.imgsz)
 
-    def load_model(self):
-        self.model = torch.jit.load(self.weights, map_location=self.device)
+    def load_model(self, *args, **kwds):
+        self.weights = kwds.get("weights", self.weights)
+        self.device = normalize_device(kwds.get("device", self.device))
+        if isinstance(self.weights, (bytes, bytearray)):
+            import io
+
+            self.weights = io.BytesIO(self.weights)
+        model = torch.jit.load(self.weights, map_location=self.device)
+        model.eval()
+        use_half = self.half and self.device.type != "cpu"
+        self.model = model.half() if use_half else model.float()
+        self._model_dtype = next(self.model.parameters()).dtype
+        self._warmup() if self._load_warmup else None
+
+    def _warmup(self, *args, **kwds):
+        import numpy as np
+
+        empty_im = np.zeros((*self.imgsz, 3), dtype=np.uint8)  # HWC
+        self.__call__(empty_im)
 
     def __call__(self, *args, **kwds):
         """
@@ -36,9 +69,11 @@ class Yolov8Detect:
         returns: numpy array of shape (n,6) where each row is
             x1, y1, x2, y2, confidence, class
         """
-        x = self.__pre_process__(*args, **kwds)
-        pred = self.model(x)
-        pred = self.__post_process__(pred, *args, **kwds)
+
+        with torch.inference_mode():
+            x = self.__pre_process__(*args, **kwds)
+            pred = self.model(x)
+            pred = self.__post_process__(pred, *args, **kwds)
         return pred
 
     def __post_process__(self, pred, *args, **kwds):
@@ -56,7 +91,7 @@ class Yolov8Detect:
         im0 = args[0]
         im1 = letterbox(im0, new_shape=self.imgsz)
         x = torch.from_numpy(im1).permute(2, 0, 1).to(self.device)
-        x = x.half() if self.half else x.float()
+        x = x.to(self._model_dtype)
         x = x.unsqueeze(0) / 255.0
         return x
 
