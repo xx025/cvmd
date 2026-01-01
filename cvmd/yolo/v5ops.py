@@ -3,35 +3,34 @@ import time
 import torch
 import torchvision
 from torchvision.ops import box_iou
-
+import torch.nn.functional as F
 from .ops import xywh2xyxy
 
 
-def non_max_suppression_v5(
-        prediction,
-        conf_thres=0.25,
-        iou_thres=0.45,
-        classes=None,
-        agnostic=False,
-        multi_label=False,
-        labels=(),
-        max_det=300,
-        nm=0,  # number of masks
+def non_max_suppression(
+    prediction,
+    conf_thres=0.25,
+    iou_thres=0.45,
+    classes=None,
+    agnostic=False,
+    multi_label=False,
+    labels=(),
+    max_det=300,
+    nm=0,  # number of masks
 ):
-    """Non-Maximum Suppression (NMS) on inference results to reject overlapping detections
+    """Non-Maximum Suppression (NMS) on inference results to reject overlapping detections.
 
     Returns:
-         list of detections, on (n,6) tensor per image [xyxy, conf, cls]
+        list of detections, on (n,6) tensor per image [xyxy, conf, cls]
     """
-
     # Checks
-    assert 0 <= conf_thres <= 1, f'Invalid Confidence threshold {conf_thres}, valid values are between 0.0 and 1.0'
-    assert 0 <= iou_thres <= 1, f'Invalid IoU {iou_thres}, valid values are between 0.0 and 1.0'
+    assert 0 <= conf_thres <= 1, f"Invalid Confidence threshold {conf_thres}, valid values are between 0.0 and 1.0"
+    assert 0 <= iou_thres <= 1, f"Invalid IoU {iou_thres}, valid values are between 0.0 and 1.0"
     if isinstance(prediction, (list, tuple)):  # YOLOv5 model in validation model, output = (inference_out, loss_out)
         prediction = prediction[0]  # select only inference output
 
     device = prediction.device
-    mps = 'mps' in device.type  # Apple MPS
+    mps = "mps" in device.type  # Apple MPS
     if mps:  # MPS not fully supported yet, convert tensors to CPU before NMS
         prediction = prediction.cpu()
     bs = prediction.shape[0]  # batch size
@@ -102,7 +101,7 @@ def non_max_suppression_v5(
         boxes, scores = x[:, :4] + c, x[:, 4]  # boxes (offset by class), scores
         i = torchvision.ops.nms(boxes, scores, iou_thres)  # NMS
         i = i[:max_det]  # limit detections
-        if merge and (1 < n < 3E3):  # Merge NMS (boxes merged using weighted mean)
+        if merge and (1 < n < 3e3):  # Merge NMS (boxes merged using weighted mean)
             # update boxes as boxes(i,4) = weights(i,n) * boxes(n,4)
             iou = box_iou(boxes[i], boxes) > iou_thres  # iou matrix
             weights = iou * scores[None]  # box weights
@@ -114,7 +113,47 @@ def non_max_suppression_v5(
         if mps:
             output[xi] = output[xi].to(device)
         if (time.time() - t) > time_limit:
-            # Logger.warning(msg=f'WARNING ⚠️ NMS time limit {time_limit:.3f}s exceeded')
+            print(f"WARNING ⚠️ NMS time limit {time_limit:.3f}s exceeded")
             break  # time limit exceeded
 
     return output
+
+
+def crop_mask(masks, boxes):
+    """Crop predicted masks by zeroing out everything not in the predicted bbox.
+
+    Args:
+        - masks should be a size [n, h, w] tensor of masks
+        - boxes should be a size [n, 4] tensor of bbox coords in relative point form.
+    """
+    _n, h, w = masks.shape
+    x1, y1, x2, y2 = torch.chunk(boxes[:, :, None], 4, 1)  # x1 shape(1,1,n)
+    r = torch.arange(w, device=masks.device, dtype=x1.dtype)[None, None, :]  # rows shape(1,w,1)
+    c = torch.arange(h, device=masks.device, dtype=x1.dtype)[None, :, None]  # cols shape(h,1,1)
+
+    return masks * ((r >= x1) * (r < x2) * (c >= y1) * (c < y2))
+
+
+def process_mask_native(protos, masks_in, bboxes, shape):
+    """Crop after upsample.
+
+    Args:
+        protos: [mask_dim, mask_h, mask_w]
+        masks_in: [n, mask_dim], n is number of masks after nms
+        bboxes: [n, 4], n is number of masks after nms
+        shape: input_image_size, (h, w).
+
+    Returns:
+        h, w, n
+    """
+    c, mh, mw = protos.shape  # CHW
+    masks = (masks_in @ protos.float().view(c, -1)).sigmoid().view(-1, mh, mw)
+    gain = min(mh / shape[0], mw / shape[1])  # gain  = old / new
+    pad = (mw - shape[1] * gain) / 2, (mh - shape[0] * gain) / 2  # wh padding
+    top, left = int(pad[1]), int(pad[0])  # y, x
+    bottom, right = int(mh - pad[1]), int(mw - pad[0])
+    masks = masks[:, top:bottom, left:right]
+
+    masks = F.interpolate(masks[None], shape, mode="bilinear", align_corners=False)[0]  # CHW
+    masks = crop_mask(masks, bboxes)  # CHW
+    return masks.gt_(0.5)
