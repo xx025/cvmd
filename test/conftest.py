@@ -12,7 +12,7 @@ def save_dir():
 @pytest.fixture
 def sample_image():
     # Try to find a real image in coco128, otherwise create a dummy one
-    coco_path = Path("temp/datasets/coco128/images/train2017/000000000074.jpg")
+    coco_path = Path("temp/datasets/coco128/images/train2017/000000000089.jpg")
     if coco_path.exists():
         return iio.imread(coco_path, mode="RGB")
     return np.zeros((640, 640, 3), dtype=np.uint8)

@@ -3,9 +3,9 @@ import numpy as np
 import imageio.v3 as iio
 from pathlib import Path
 from pycvt import draw_bounding_boxes, overlay_masks
-from cvmd import Yolov5Detect, Yolov5Segment, Yolov8Segment, Yolov11Detect, Yolov11Segment
+from cvmd import Yolov5Detect, Yolov5Segment, Yolov8Segment, Yolov11Detect, Yolov11Segment, DETR
 
-def run_detection_test(model_class, weights, sample_image, blank_image, save_dir, name):
+def run_detection_test(model_class, weights, sample_image, blank_image, save_dir, name, imgsz=640):
     if not Path(weights).exists():
         pytest.skip(f"Weights not found: {weights}")
     
@@ -14,7 +14,7 @@ def run_detection_test(model_class, weights, sample_image, blank_image, save_dir
         device="cuda",
         conf=0.25,
         iou=0.45,
-        imgsz=640,
+        imgsz=imgsz,
         half=True,
     )
     model.load_model()
@@ -70,12 +70,13 @@ def run_segmentation_test(model_class, weights, sample_image, blank_image, save_
     assert len(blank_results) >= 0
 
 @pytest.mark.parametrize("model_info", [
-    (Yolov5Detect, "temp/model_weights/yolov5l.torchscript", "yolov5l_detect"),
-    (Yolov11Detect, "temp/model_weights/yolo11l.torchscript", "yolov11l_detect"),
+    (Yolov5Detect, "temp/model_weights/yolov5l.torchscript", "yolov5l_detect", 640),
+    (Yolov11Detect, "temp/model_weights/yolo11l.torchscript", "yolov11l_detect", 640),
+    (DETR, "temp/model_weights/detr_resnet50.torchscript", "detr_resnet50", 800),
 ])
 def test_detection(model_info, sample_image, blank_image, save_dir):
-    model_class, weights, name = model_info
-    run_detection_test(model_class, weights, sample_image, blank_image, save_dir, name)
+    model_class, weights, name, imgsz = model_info
+    run_detection_test(model_class, weights, sample_image, blank_image, save_dir, name, imgsz=imgsz)
 
 @pytest.mark.parametrize("model_info", [
     (Yolov5Segment, "temp/model_weights/yolov5l-seg.torchscript", "yolov5l_seg"),
