@@ -3,6 +3,15 @@
 > A Computer Vision Model Development toolkit.
 > cvmd uses NumPy arrays as both input and output, aiming to provide a unified and concise model inference interface.
 
+## Key Features
+
+- **Unified API**: "NumPy in, NumPy out" design. All models share a consistent interface, making it easy to switch between different YOLO versions.
+- **Flexible Registry**: Easily extend the library with custom models using the `@register_model` decorator.
+- **Production Ready**: Optimized for inference using TorchScript, removing dependencies on training codebases.
+- **Scalable Inference**: Built-in support for [Ray](https://www.ray.io/) to enable multi-GPU distributed inference for large datasets.
+- **Advanced Utilities**: Includes sliding window inference for high-resolution images and Weighted Boxes Fusion (WBF) for result merging.
+- **Clean Architecture**: Modular design with minimal redundancy, making it lightweight and easy to maintain.
+
 ## Installation
 
 ```bash
