@@ -3,7 +3,7 @@ from cvmd.registry import register_model
 from cvmd.yolo.yolov8 import Yolov8Detect
 import numpy as np
 import torchvision.transforms as T
-from cvmd.yolo.ops import xywh2xyxy, xywhn2xyxy
+from cvmd.yolo.ops import xywhn2xyxy
 
 
 @register_model("detr", "detrdetect", "DETR")
