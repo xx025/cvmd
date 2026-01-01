@@ -65,7 +65,7 @@ class Yolov8Detect:
     def __call__(self, *args, **kwds):
         """
         arguments:
-            images: numpy array of shape (h,w,3) in BGR format
+            images: numpy array of shape (h,w,3) in RGB format
 
         returns: numpy array of shape (n,6) where each row is
             x1, y1, x2, y2, confidence, class
