@@ -10,11 +10,16 @@ def save_dir():
     return path
 
 @pytest.fixture
-def sample_image():
-    # Try to find a real image in coco128, otherwise create a dummy one
-    coco_path = Path("temp/datasets/coco128/images/train2017/000000000089.jpg")
-    if coco_path.exists():
-        return iio.imread(coco_path, mode="RGB")
+def coco_images():
+    coco_dir = Path("temp/datasets/coco128/images/train2017")
+    if not coco_dir.exists():
+        return []
+    return list(coco_dir.rglob("*.jpg"))
+
+@pytest.fixture
+def sample_image(coco_images):
+    if coco_images:
+        return iio.imread(coco_images[0], mode="RGB")
     return np.zeros((640, 640, 3), dtype=np.uint8)
 
 @pytest.fixture
