@@ -13,7 +13,7 @@ class Yolov5Detect(Yolov8Detect):
 
     def __post_process__(self, pred, *args, **kwds):
         pred = non_max_suppression(
-            pred, self.conf, self.iou, classes=self.classes, nc=self.nc
+            pred, self.conf, self.iou, classes=self.classes
         )[0]
         pred[:, :4] = scale_boxes(self.imgsz, pred[:, :4], args[0].shape).round()
         return pred.cpu().numpy()
