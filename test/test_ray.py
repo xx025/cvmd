@@ -5,10 +5,9 @@ from tqdm import tqdm
 from cvmd import YoloInitKwargs
 from cvmd import IMAGE_EXTS
 import imageio.v3 as iio
-import pandas as df
 
 from cvmd.utils.ray_infer import InferActor, ray_infer_iter
-from pycvt import get_color, save_yolo_annotations, draw_bounding_boxes, xyxy2xywhn
+from pycvt import save_yolo_annotations, draw_bounding_boxes, xyxy2xywhn
 
 
 # must can be pickled
