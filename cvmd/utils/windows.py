@@ -2,7 +2,7 @@ import numpy as np
 
 
 def detect_with_windows(
-    image, windows, model, merge=True, merge_iou=0.001
+    image, windows, model, merge=True, merge_iou=0.2
 ):
     """
     Detect in multiple windows and optionally merge overlapped duplicates.
