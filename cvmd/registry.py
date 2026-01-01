@@ -39,7 +39,7 @@ def build(model: str | Type, *args: Any, **kwargs: Any):
         cls = _MODEL_REGISTRY[key]
     else:
         cls = model
-    print(f"Building model: {cls}")
+    # print(f"Building model: {cls}")
     return cls(*args, **kwargs)
 
 
