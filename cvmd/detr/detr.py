@@ -32,6 +32,11 @@ class DETR(Yolov8Detect):
         scores, labels = probs[..., :-1].max(-1)
 
         keep = scores > self.conf
+        
+        if self.classes is not None:
+            classes_t = torch.as_tensor(self.classes, device=labels.device)
+            keep = keep & torch.isin(labels, classes_t)
+                
         scores = scores[keep]
         labels = labels[keep]
         boxes = boxes[keep]
