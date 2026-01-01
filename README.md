@@ -70,7 +70,7 @@ Currently supported model series (primarily loaded via TorchScript):
 | **YOLOv11** | Detection / Segmentation | `yolov11det`, `yolov11seg` |
 | **YOLOv8** | Detection / Segmentation | `yolov8det`, `yolov8seg` |
 | **YOLOv5** | Detection / Segmentation | `yolov5det`, `yolov5seg` |
-| **DETR** | Detection | `detr` (To be implemented) |
+| **DETR** | Detection | `detr` |
 | **Deformable DETR** | Detection | `deformabledetr` (To be implemented) |
 
 ### Inference Interface
