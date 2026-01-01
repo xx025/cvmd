@@ -2,6 +2,7 @@ from typing import Tuple, TypedDict, Optional, Sequence, Union
 
 import torch
 
+from cvmd.registry import register_model
 from cvmd.utils.torchutils import normalize_device
 
 from .ops import (
@@ -13,6 +14,7 @@ from .ops import (
 
 
 class YoloInitKwargs(TypedDict, total=False):
+    model_name: Optional[str]
     weights: Union[str, bytes, bytearray]
     device: Union[str, torch.device]
     conf: float
@@ -24,7 +26,7 @@ class YoloInitKwargs(TypedDict, total=False):
     load_warm_up: bool
     mask_thr: float
 
-
+@register_model("yolov8", "yolov8det", "yolov8detect")
 class Yolov8Detect:
 
     def __init__(self, *args, **kwargs: YoloInitKwargs):
@@ -55,6 +57,7 @@ class Yolov8Detect:
         self.model = model.half() if use_half else model.float()
         self._model_dtype = next(self.model.parameters()).dtype
         self._warmup() if self._load_warmup else None
+    
 
     def _warmup(self, *args, **kwds):
         import numpy as np
@@ -98,7 +101,7 @@ class Yolov8Detect:
         x = x.unsqueeze(0) / 255.0
         return x
 
-
+@register_model("yolov8seg", "yolov8segment")
 class Yolov8Segment(Yolov8Detect):
 
     def __init__(self, *args, **kwargs: YoloInitKwargs):

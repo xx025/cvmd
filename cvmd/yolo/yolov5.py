@@ -1,5 +1,7 @@
 import torch
 
+from cvmd.registry import register_model
+
 from .v5ops import non_max_suppression_v5
 
 from .yolov8 import Yolov8Detect
@@ -7,6 +9,7 @@ from .yolov8 import Yolov8Detect
 from .ops import scale_boxes
 
 
+@register_model("yolov5", "yolov5det", "yolov5detect")
 class Yolov5Detect(Yolov8Detect):
 
     def __init__(self, *args, **kwargs):
@@ -25,6 +28,7 @@ class Yolov5Detect(Yolov8Detect):
         return pred.cpu().numpy()
 
 
+@register_model("yolov5seg", "yolov5segment")
 class Yolov5Segment:
 
     def __init__(self, *args, **kwargs):

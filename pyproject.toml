@@ -11,8 +11,10 @@ dev = [
     "ensemble-boxes>=1.0.9",
     "imageio>=2.37.2",
     "pycvt>=0.0.1.post202512262129",
+    "ray>=2.53.0",
     "torch>=2.9.1",
     "torchvision>=0.24.1",
+    "tqdm>=4.67.1",
     "ultralytics>=8.3.244",
 ]
 
