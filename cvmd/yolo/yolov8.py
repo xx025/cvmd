@@ -70,6 +70,8 @@ class Yolov8Detect:
         returns: numpy array of shape (n,6) where each row is
             x1, y1, x2, y2, confidence, class
         """
+        if not hasattr(self, "model"):
+            raise RuntimeError("Model is not loaded. Call `load_model` first.")
 
         with torch.inference_mode():
             x = self.__pre_process__(*args, **kwds)
@@ -85,7 +87,7 @@ class Yolov8Detect:
             classes=self.classes,
             nc=self.nc,
         )[0]
-        pred[:, :4] = scale_boxes(self.imgsz, pred[:, :4], args[0].shape).round()
+        pred[:, :4] = scale_boxes(self.imgsz, pred[:, :4], args[0].shape[:2]).round()
         return pred.cpu().numpy()
 
     def __pre_process__(self, *args, **kwds):
@@ -116,9 +118,10 @@ class Yolov8Segment(Yolov8Detect):
             pred0, self.conf, self.iou, classes=self.classes, nc=self.nc
         )[0]
         if det is None or len(det) == 0:
-            return det.cpu().numpy(), im0[:0, :, 0]
+            import numpy as np
+            return np.zeros((0, 6), dtype=np.float32), np.zeros((0, *im0.shape[:2]), dtype=bool)
 
-        det[:, :4] = scale_boxes(self.imgsz, det[:, :4], im0.shape).round()
+        det[:, :4] = scale_boxes(self.imgsz, det[:, :4], im0.shape[:2]).round()
         masks = process_mask_native(proto, det[:, 6:], det[:, :4], im0.shape[:2])
         masks = masks > self.mask_thr
 
