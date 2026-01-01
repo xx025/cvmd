@@ -1,7 +1,6 @@
 from pathlib import Path
 import numpy as np
-from cvmd import Yolov8Segment
-from pycvt import draw_bounding_boxes, overlay_masks, get_color
+from pycvt import draw_bounding_boxes
 
 import imageio.v3 as iio
 
