@@ -35,7 +35,7 @@ def main():
         image=im,
         boxes=bbox,
         labels=[f"{c}-{s:.2f}" for c, s in zip(cls, conf)],
-        line_width=3,
+        line_width=1,
     )
     iio.imwrite(save_dir / "yolov5l_result.jpg", plot_im)
 
