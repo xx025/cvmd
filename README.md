@@ -28,12 +28,18 @@ pip install cvmd
 
 ## Quick Start
 
+You can build a model using the `build` function (convenient for dynamic names) or by importing the model class directly (better for IDE support).
+
 ```python
 import imageio.v3 as iio
-from cvmd import build
+from cvmd import build, Yolov11Detect
 
-# Build and load model
+# Option 1: Build by name
 model = build("yolov11det", weights="yolo11l.torchscript", device="cuda")
+
+# Option 2: Direct import
+# model = Yolov11Detect(weights="yolo11l.torchscript", device="cuda")
+
 model.load_model()
 
 # Read image (HWC, RGB)
@@ -48,7 +54,7 @@ results = model(image)
 
 ### Model Building and Management
 
-`cvmd` provides a registration mechanism to manage different models.
+`cvmd` provides a registration mechanism to manage different models. While the `build` pattern is convenient for dynamic model creation, you can also import model classes directly for better IDE support and type checking.
 
 - `list_models()`: List all registered model names.
 - `build(model_name_or_cls, **kwargs)`: Build a model instance by name or class.
@@ -144,6 +150,8 @@ You can find more usage examples in the [test/](test/) directory:
 ## Development
 
 ```bash
+git clone <this repository>
+cd cvmd
 uv sync --dev
 ```
 
