@@ -1,4 +1,4 @@
-from typing import TypedDict, Optional, Sequence, Union
+from typing import Tuple, TypedDict, Optional, Sequence, Union
 
 import torch
 
@@ -14,14 +14,15 @@ from .ops import (
 
 class YoloInitKwargs(TypedDict, total=False):
     weights: Union[str, bytes, bytearray]
-    device: str
+    device: Union[str, torch.device]
     conf: float
     iou: float
     classes: Optional[Sequence[int]]
-    imgsz: int
+    imgsz: Union[int, Tuple[int, int]]
     half: bool
     nc: Optional[int]
     load_warm_up: bool
+    mask_thr: float
 
 
 class Yolov8Detect:
@@ -98,7 +99,7 @@ class Yolov8Detect:
 
 class Yolov8Segment(Yolov8Detect):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs: YoloInitKwargs):
         self.mask_thr = kwargs.pop("mask_thr", 0.6)
         self.nc = kwargs.get("nc", None)
         super().__init__(*args, **kwargs)
