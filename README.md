@@ -12,6 +12,14 @@
 - **Advanced Utilities**: Includes sliding window inference for high-resolution images and Weighted Boxes Fusion (WBF) for result merging.
 - **Clean Architecture**: Modular design with minimal redundancy, making it lightweight and easy to maintain.
 
+## Design Philosophy: Why Batch=1?
+
+`cvmd` is intentionally designed to process one image at a time (`batch=1`). This choice prioritizes:
+
+- **API Simplicity**: A direct `model(image)` call is intuitive and returns a clean NumPy array, avoiding the complexity of list-of-tensors or padded batch management.
+- **Input Flexibility**: It handles images of any resolution automatically without requiring manual padding or alignment for batching.
+- **Horizontal Scaling**: Instead of "Vertical Scaling" (increasing batch size), `cvmd` promotes "Horizontal Scaling" via **Ray**. By running multiple model instances in parallel, you can achieve high throughput while keeping the inference logic simple and robust.
+
 ## Installation
 
 ```bash
