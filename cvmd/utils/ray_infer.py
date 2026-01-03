@@ -46,9 +46,9 @@ def ray_infer_iter(
     InferActorCls,
     tasks: List[Any],
     *,
-    num_actors: int = 6,
-    num_cpus: int = 2,
-    gpus_per_actor: Optional[float] = None,
+    num_actors: Optional[int] = None,
+    num_cpus: float = 2.0,
+    gpus_per_actor: float = 0.25,
     actor_kwargs: Optional[dict] = None,
     remote_method: str = "infer",
     remote_args: Optional[tuple] = None,
@@ -62,12 +62,18 @@ def ray_infer_iter(
     remote_args = remote_args or ()
     remote_kwargs = remote_kwargs or {}
 
-    if gpus_per_actor is None:
-        total_gpus = ray.cluster_resources().get("GPU", 0)
-        if total_gpus > 0:
-            gpus_per_actor = min(1.0, total_gpus / num_actors)
-        else:
-            gpus_per_actor = 0
+    total_gpus = ray.cluster_resources().get("GPU", 0)
+    if total_gpus > 0:
+        if num_actors is None:
+            # Standard Ray pattern: Fix resource requirement per actor, 
+            # and dynamically calculate the number of actors to fill the cluster.
+            num_actors = int(total_gpus / gpus_per_actor)
+    else:
+        gpus_per_actor = 0
+        if num_actors is None:
+            num_actors = 1
+
+    num_actors = max(1, num_actors)
 
     RemoteInfer = ray.remote(num_gpus=gpus_per_actor, num_cpus=num_cpus)(InferActorCls)
     actors = [RemoteInfer.remote(**actor_kwargs) for _ in range(num_actors)]
