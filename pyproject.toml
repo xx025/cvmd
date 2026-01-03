@@ -1,6 +1,6 @@
 [project]
 name = "cvmd"
-version = "0.1.0-202601010010"
+version = "0.1.0-202601010011"
 description = "Computer Vision Models Deployment"
 readme = "README.md"
 requires-python = ">=3.10"
