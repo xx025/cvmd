@@ -63,7 +63,11 @@ def ray_infer_iter(
     remote_kwargs = remote_kwargs or {}
 
     if gpus_per_actor is None:
-        gpus_per_actor = 1.0 / num_actors
+        total_gpus = ray.cluster_resources().get("GPU", 0)
+        if total_gpus > 0:
+            gpus_per_actor = min(1.0, total_gpus / num_actors)
+        else:
+            gpus_per_actor = 0
 
     RemoteInfer = ray.remote(num_gpus=gpus_per_actor, num_cpus=num_cpus)(InferActorCls)
     actors = [RemoteInfer.remote(**actor_kwargs) for _ in range(num_actors)]

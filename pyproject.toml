@@ -1,6 +1,6 @@
 [project]
 name = "cvmd"
-version = "0.1.0-202601010009"
+version = "0.1.0-202601010010"
 description = "Computer Vision Models Deployment"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -8,13 +8,16 @@ dependencies = []
 
 [dependency-groups]
 dev = [
+    "accelerate>=1.12.0",
     "ensemble-boxes>=1.0.9",
     "imageio>=2.37.2",
     "pycvt>=0.0.1.post202512262129",
     "ray>=2.53.0",
+    "timm>=1.0.22",
     "torch>=2.9.1",
     "torchvision>=0.24.1",
     "tqdm>=4.67.1",
+    "transformers>=4.57.3",
     "ultralytics>=8.3.244",
 ]
 
