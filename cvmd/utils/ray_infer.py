@@ -16,8 +16,8 @@ except ImportError:
 class InferActor:
     def __init__(
         self,
-        runs_config: Dict[str, Any] = {},
-        model_config: Dict[str, Any] = {},
+        runs_config: Optional[Dict[str, Any]] = None,
+        model_config: Optional[Dict[str, Any]] = None,
         handler: Optional[Callable[..., Any]] = None,
     ):
         # print("Initializing InferActor...")
@@ -28,8 +28,8 @@ class InferActor:
             **model_config,
         )
         self.model.load_model()
-        self.runs_config = runs_config
-        self.model_config = model_config
+        self.runs_config = runs_config or {}
+        self.model_config = model_config or {}
         self.model_config["model"] = self.model
         self.handler = handler
 
