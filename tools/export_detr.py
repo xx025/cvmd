@@ -1,4 +1,5 @@
 import torch
+from pathlib import Path
 
 
 if __name__ == "__main__":
@@ -18,9 +19,8 @@ if __name__ == "__main__":
     
     # must set strict=False due to some ops not supported in half precision
     ts_model = torch.jit.trace(model, dummy_input, strict=False)
-        
-    save_path = "/home/user/worksapce/cvmd/temp/model_weights/detr_resnet50.torchscript"
-    import os
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    ts_model.save(save_path)
+
+    save_path = Path(__file__).resolve().parents[1] / "temp" / "model_weights" / "detr_resnet50.torchscript"
+    save_path.parent.mkdir(parents=True, exist_ok=True)
+    ts_model.save(str(save_path))
     print(f"Saved: {save_path}")

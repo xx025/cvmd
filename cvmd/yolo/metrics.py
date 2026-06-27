@@ -320,6 +320,16 @@ def smooth(y: np.ndarray, f: float = 0.05) -> np.ndarray:
     return np.convolve(yp, np.ones(nf) / nf, mode="valid")  # y-smoothed
 
 
+def compute_ap(recall: np.ndarray, precision: np.ndarray) -> Tuple[float, np.ndarray, np.ndarray]:
+    """Compute average precision from a precision-recall curve."""
+    mrec = np.concatenate(([0.0], recall, [1.0]))
+    mpre = np.concatenate(([1.0], precision, [0.0]))
+    mpre = np.flip(np.maximum.accumulate(np.flip(mpre)))
+    x = np.linspace(0, 1, 101)
+    ap = np.trapz(np.interp(x, mrec, mpre), x)
+    return ap, mpre, mrec
+
+
 
 
 
@@ -419,6 +429,5 @@ def ap_per_class(
     tp = (r * nt).round()  # true positives
     fp = (tp / (p + eps) - tp).round()  # false positives
     return tp, fp, p, r, f1, ap, unique_classes.astype(int), p_curve, r_curve, f1_curve, x, prec_values
-
 
 

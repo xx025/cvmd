@@ -1,6 +1,10 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "cvmd"
-version = "0.1.0-202601042351"
+dynamic = ["version"]
 description = "Computer Vision Models Deployment"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -24,3 +28,9 @@ dev = [
 [[tool.uv.index]]
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 default = true
+
+[tool.setuptools.dynamic]
+version = {attr = "cvmd._version.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["cvmd*"]

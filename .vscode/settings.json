@@ -9,5 +9,12 @@
     ,
     "terminal.integrated.env.windows": {
         "PYTHONPATH": "${workspaceFolder}"
-    }
+    },
+    "python-envs.defaultEnvManager": "ms-python.python:conda",
+    "python-envs.defaultPackageManager": "ms-python.python:conda",
+    "python.testing.pytestArgs": [
+        "."
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }
