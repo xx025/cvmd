@@ -1,5 +1,7 @@
 # CVMD
 
+<img src="doc/images/hero-en.png" alt="CVMD Hero" width="1100" />
+
 [中文文档](doc/README_zh.md)
 
 > A TorchScript-first computer vision inference toolkit with a unified NumPy API.

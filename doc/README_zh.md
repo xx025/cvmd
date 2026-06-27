@@ -1,5 +1,7 @@
 # CVMD
 
+<img src="images/hero-zh.png" alt="CVMD 中文主视觉" width="1100" />
+
 [English](../README.md)
 
 > 一个以 TorchScript 为优先、采用统一 NumPy API 的计算机视觉推理工具库。
