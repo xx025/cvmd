@@ -4,14 +4,15 @@
 
 [中文文档](doc/README_zh.md)
 
-> A TorchScript-first computer vision inference toolkit with a unified NumPy API.
+> One unified inference interface for deployment-ready vision models.
 
 ## Why CVMD
 
-- **One inference interface**: use the same `model(image)` pattern across YOLO and DETR-style models.
-- **Deployment-oriented**: load TorchScript weights directly without carrying training repositories into production.
-- **Easy model switching**: swap architectures with `build(...)` while keeping the same input/output convention.
-- **Practical scaling path**: start with simple single-image inference, then expand to sliding-window or Ray-based distributed runs when needed.
+Use one consistent inference interface across multiple vision model families, without dragging training code into deployment.
+
+- **One API for multiple model families**: run YOLO and DETR-style models with the same `model(image)` workflow.
+- **TorchScript-first deployment**: load export-ready weights directly and keep inference environments lean.
+- **Easy to adopt, easy to scale**: start from simple single-image inference, then extend to sliding-window or Ray-based distributed pipelines.
 
 ## Installation
 
