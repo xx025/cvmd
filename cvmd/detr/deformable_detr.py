@@ -4,7 +4,11 @@ from cvmd.detr.detr import TorchscriptDETRBase
 from cvmd.registry import register_model
 
 
-@register_model("deformabledetr", "deformable_detr", "deformable-detr")
+@register_model(
+    "deformabledetr",
+    "deformabledetrdet",
+    "deformabledetrdetect",
+)
 class DeformableDETR(TorchscriptDETRBase):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("imgsz", 800)

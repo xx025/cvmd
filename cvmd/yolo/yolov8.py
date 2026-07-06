@@ -1,8 +1,7 @@
-from typing import Tuple, TypedDict, Optional, Sequence, Union
-
 import torch
 
 from cvmd.registry import register_model
+from cvmd.types import ModelInitKwargs
 from cvmd.utils.torchutils import normalize_device
 
 from .ops import (
@@ -12,24 +11,10 @@ from .ops import (
     scale_boxes,
 )
 
-
-class YoloInitKwargs(TypedDict, total=False):
-    model_name: Optional[str]
-    weights: Union[str, bytes, bytearray]
-    device: Union[str, torch.device]
-    conf: float
-    iou: float
-    classes: Optional[Sequence[int]]
-    imgsz: Union[int, Tuple[int, int]]
-    half: bool
-    nc: Optional[int]
-    load_warm_up: bool
-    mask_thr: float
-
 @register_model("yolov8", "yolov8det", "yolov8detect")
 class Yolov8Detect:
 
-    def __init__(self, *args, **kwargs: YoloInitKwargs):
+    def __init__(self, *args, **kwargs: ModelInitKwargs):
         self.weights = kwargs.get("weights", "yolov8s.torchscript")
         self.device = normalize_device(kwargs.get("device", "cpu"))
         self.conf = kwargs.get("conf", 0.25)
@@ -104,7 +89,7 @@ class Yolov8Detect:
 @register_model("yolov8seg", "yolov8segment")
 class Yolov8Segment(Yolov8Detect):
 
-    def __init__(self, *args, **kwargs: YoloInitKwargs):
+    def __init__(self, *args, **kwargs: ModelInitKwargs):
         self.mask_thr = kwargs.pop("mask_thr", 0.6)
         self.nc = kwargs.get("nc", None)
         super().__init__(*args, **kwargs)

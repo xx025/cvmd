@@ -42,9 +42,9 @@ results = model(image)
 | **YOLOv11** | Detection / Segmentation | `yolov11det`, `yolov11seg` |
 | **YOLOv8** | Detection / Segmentation | `yolov8det`, `yolov8seg` |
 | **YOLOv5** | Detection / Segmentation | `yolov5det`, `yolov5seg` |
-| **DETR** | Detection | `detr` |
-| **RF-DETR** | Detection | `rfdetr`, `rfdetrdetect`, `rf-detr` |
-| **Deformable DETR** | Detection | `deformabledetr`, `deformable_detr`, `deformable-detr` |
+| **DETR** | Detection | `detrdet` |
+| **RF-DETR** | Detection | `rfdetrdet` |
+| **Deformable DETR** | Detection | `deformabledetrdet` |
 
 ## Core API
 

@@ -67,7 +67,7 @@ class TorchscriptDETRBase(Yolov8Detect):
         return results.cpu().numpy().astype(np.float32)
 
 
-@register_model("detr", "detrdetect", "DETR")
+@register_model("detr", "detrdet", "detrdetect")
 class DETR(TorchscriptDETRBase):
     def _decode_predictions(self, preds):
         logits = preds["pred_logits"][0]

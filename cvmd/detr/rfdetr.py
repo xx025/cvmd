@@ -4,7 +4,7 @@ from cvmd.registry import register_model
 from cvmd.detr.detr import TorchscriptDETRBase
 
 
-@register_model("rfdetr", "rfdetrdetect", "rf-detr")
+@register_model("rfdetr", "rfdetrdet", "rfdetrdetect")
 class RFDETR(TorchscriptDETRBase):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("imgsz", 384)

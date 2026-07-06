@@ -42,9 +42,9 @@ results = model(image)
 | **YOLOv11** | 检测 / 分割 | `yolov11det`, `yolov11seg` |
 | **YOLOv8** | 检测 / 分割 | `yolov8det`, `yolov8seg` |
 | **YOLOv5** | 检测 / 分割 | `yolov5det`, `yolov5seg` |
-| **DETR** | 检测 | `detr` |
-| **RF-DETR** | 检测 | `rfdetr`, `rfdetrdetect`, `rf-detr` |
-| **Deformable DETR** | 检测 | `deformabledetr`, `deformable_detr`, `deformable-detr` |
+| **DETR** | 检测 | `detrdet` |
+| **RF-DETR** | 检测 | `rfdetrdet` |
+| **Deformable DETR** | 检测 | `deformabledetrdet` |
 
 ## 核心 API
 

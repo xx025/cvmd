@@ -1,7 +1,9 @@
 __version__: str
 
 from .yolo.yolov5 import Yolov5Detect as Yolov5Detect, Yolov5Segment as Yolov5Segment
-from .yolo.yolov8 import Yolov8Detect as Yolov8Detect, Yolov8Segment as Yolov8Segment, YoloInitKwargs as YoloInitKwargs
+from .types import ModelInitKwargs as ModelInitKwargs
+from .types import YoloInitKwargs as YoloInitKwargs
+from .yolo.yolov8 import Yolov8Detect as Yolov8Detect, Yolov8Segment as Yolov8Segment
 from .yolo.yolov11 import Yolov11Detect as Yolov11Detect, Yolov11Segment as Yolov11Segment
 from .yolo.yolov12 import Yolov12Detect as Yolov12Detect, Yolov12Segment as Yolov12Segment
 from .detr.detr import DETR as DETR
@@ -16,6 +18,7 @@ __all__ = [
     "DETR",
     "DeformableDETR",
     "RFDETR",
+    "ModelInitKwargs",
     "Yolov5Detect",
     "Yolov5Segment",
     "YoloInitKwargs",
