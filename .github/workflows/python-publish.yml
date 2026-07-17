@@ -3,6 +3,7 @@ name: Tag and Release on Version Change
 on:
   push:
     paths:
+      - "cvmd/_version.py"
       - "pyproject.toml"
 
 permissions:
@@ -21,10 +22,25 @@ jobs:
       with:
         python-version: '3.10'
 
-    - name: Extract version from pyproject.toml
+    - name: Extract version from cvmd/_version.py
       id: get_version
       run: |
-        VERSION=$(grep '^version =' pyproject.toml | sed -E 's/version = "(.*)"/\1/')
+        VERSION=$(python - <<'PY'
+        import ast
+        from pathlib import Path
+
+        module = ast.parse(Path("cvmd/_version.py").read_text())
+        for node in module.body:
+            if (
+                isinstance(node, ast.Assign)
+                and any(isinstance(target, ast.Name) and target.id == "__version__" for target in node.targets)
+            ):
+                print(ast.literal_eval(node.value))
+                break
+        else:
+            raise SystemExit("Could not find __version__ in cvmd/_version.py")
+        PY
+        )
         echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
     - name: Check if tag already exists

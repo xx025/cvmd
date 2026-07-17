@@ -3,6 +3,7 @@ name: Publish to PyPI
 on:
   push:
     paths:
+      - "cvmd/_version.py"
       - "pyproject.toml"
 
 jobs:
