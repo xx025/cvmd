@@ -1,3 +1,5 @@
+import os
+import tempfile
 from typing import Callable, Dict, Any, Iterable, List, Optional
 
 
@@ -42,6 +44,30 @@ class InferActor:
         return self.handler(task, self.model_config, self.runs_config, *args, **kwds)
 
 
+def _ensure_ray_initialized(
+    *,
+    ray_address: Optional[str] = "local",
+    ray_init_kwargs: Optional[Dict[str, Any]] = None,
+) -> None:
+    if ray is None:
+        raise ImportError("ray is required for ray_infer_iter, please install ray first")
+
+    if ray.is_initialized():
+        return
+
+    init_kwargs = {
+        "include_dashboard": False,
+        "ignore_reinit_error": True,
+        "_temp_dir": os.path.join(tempfile.gettempdir(), "cvmd-ray", str(os.getpid())),
+    }
+    init_kwargs.update(ray_init_kwargs or {})
+
+    if ray_address is not None and "address" not in init_kwargs:
+        init_kwargs["address"] = ray_address
+
+    ray.init(**init_kwargs)
+
+
 def ray_infer_iter(
     InferActorCls,
     tasks: List[Any],
@@ -53,10 +79,20 @@ def ray_infer_iter(
     remote_method: str = "infer",
     remote_args: Optional[tuple] = None,
     remote_kwargs: Optional[dict] = None,
+    ray_address: Optional[str] = "local",
+    ray_init_kwargs: Optional[Dict[str, Any]] = None,
 ) -> Iterable[Any]:
+    """Run inference tasks through a Ray actor pool.
 
-    if not ray.is_initialized():
-        ray.init()
+    By default, each Python process starts an isolated local Ray runtime to avoid
+    collisions between concurrent local jobs. Pass ray_address="auto" or an
+    explicit address in ray_init_kwargs to connect to an existing Ray cluster.
+    """
+
+    _ensure_ray_initialized(
+        ray_address=ray_address,
+        ray_init_kwargs=ray_init_kwargs,
+    )
 
     actor_kwargs = actor_kwargs or {}
     remote_args = remote_args or ()

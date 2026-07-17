@@ -7,7 +7,71 @@ from cvmd import IMAGE_EXTS
 import imageio.v3 as iio
 
 from cvmd.utils.ray_infer import InferActor, ray_infer_iter
+from cvmd.utils import ray_infer as ray_infer_module
 from pycvt import save_yolo_annotations, draw_bounding_boxes, xyxy2xywhn
+
+
+class DummyRay:
+    def __init__(self, initialized=False):
+        self.initialized = initialized
+        self.init_kwargs = None
+
+    def is_initialized(self):
+        return self.initialized
+
+    def init(self, **kwargs):
+        self.init_kwargs = kwargs
+        self.initialized = True
+
+
+def test_ray_init_defaults_isolate_local_processes(monkeypatch):
+    dummy_ray = DummyRay()
+
+    monkeypatch.setattr(ray_infer_module, "ray", dummy_ray)
+    monkeypatch.setattr(ray_infer_module.os, "getpid", lambda: 12345)
+    monkeypatch.setattr(ray_infer_module.tempfile, "gettempdir", lambda: "/tmp")
+
+    ray_infer_module._ensure_ray_initialized()
+
+    assert dummy_ray.init_kwargs == {
+        "address": "local",
+        "include_dashboard": False,
+        "ignore_reinit_error": True,
+        "_temp_dir": "/tmp/cvmd-ray/12345",
+    }
+
+
+def test_ray_init_allows_overrides(monkeypatch):
+    dummy_ray = DummyRay()
+
+    monkeypatch.setattr(ray_infer_module, "ray", dummy_ray)
+
+    ray_infer_module._ensure_ray_initialized(
+        ray_address="auto",
+        ray_init_kwargs={
+            "include_dashboard": True,
+            "_temp_dir": "/tmp/shared-ray",
+            "namespace": "cvmd",
+        },
+    )
+
+    assert dummy_ray.init_kwargs == {
+        "address": "auto",
+        "include_dashboard": True,
+        "ignore_reinit_error": True,
+        "_temp_dir": "/tmp/shared-ray",
+        "namespace": "cvmd",
+    }
+
+
+def test_ray_init_skips_when_already_initialized(monkeypatch):
+    dummy_ray = DummyRay(initialized=True)
+
+    monkeypatch.setattr(ray_infer_module, "ray", dummy_ray)
+
+    ray_infer_module._ensure_ray_initialized()
+
+    assert dummy_ray.init_kwargs is None
 
 
 # must can be pickled
