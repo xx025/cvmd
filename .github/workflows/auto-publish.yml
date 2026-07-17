@@ -18,10 +18,57 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v4
 
+      - name: Check version on PyPI
+        id: pypi_version
+        run: |
+          VERSION=$(python - <<'PY'
+          import ast
+          from pathlib import Path
+
+          module = ast.parse(Path("cvmd/_version.py").read_text())
+          for node in module.body:
+              if (
+                  isinstance(node, ast.Assign)
+                  and any(isinstance(target, ast.Name) and target.id == "__version__" for target in node.targets)
+              ):
+                  print(ast.literal_eval(node.value))
+                  break
+          else:
+              raise SystemExit("Could not find __version__ in cvmd/_version.py")
+          PY
+          )
+
+          STATUS=$(python - "$VERSION" <<'PY'
+          import sys
+          from urllib.error import HTTPError
+          from urllib.request import Request, urlopen
+
+          version = sys.argv[1]
+          request = Request(f"https://pypi.org/pypi/cvmd/{version}/json")
+          try:
+              urlopen(request, timeout=20).close()
+          except HTTPError as exc:
+              if exc.code == 404:
+                  print("missing")
+              else:
+                  raise
+          else:
+              print("exists")
+          PY
+          )
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+
       - name: Build the package
         run: |
           uv sync --no-dev
           uv build
 
       - name: Publish to PyPI
-        run: uv publish --username __token__ --password ${{ secrets.PYPI_TOKEN }} --check-url https://pypi.org/simple/cvmd/
+        if: steps.pypi_version.outputs.status == 'missing'
+        run: uv publish --username __token__ --password ${{ secrets.PYPI_TOKEN }}
+
+      - name: Skip existing PyPI version
+        if: steps.pypi_version.outputs.status == 'exists'
+        run: echo "cvmd ${{ steps.pypi_version.outputs.version }} already exists on PyPI; skipping publish."
